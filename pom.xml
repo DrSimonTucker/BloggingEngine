@@ -8,8 +8,26 @@
   <name>blogger</name>
   <url>http://maven.apache.org</url>
 
-  <dependencies>
+  <scm>
+    <connection>scm:git:git@github.com:DrSimonTucker/BloggingEngine.git</connection>
+    <url>scm:git:git@github.com:DrSimonTucker/BloggingEngine.git</url>
+  </scm>
+  
+  <distributionManagement>
+    <repository>
+      <id>mcbee</id>
+      <name>mcbee-releases</name>
+      <url>http://mcbee:8080/artifactory/libs-releases-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>mcbee</id>
+      <name>mcbee-snapshots</name>
+      <url>http://mcbee:8080/artifactory/libs-snapshots-local</url>
+    </snapshotRepository>
+  </distributionManagement>
 
+
+  <dependencies>
     <dependency>
       <groupId>org.markdownj</groupId>
       <artifactId>markdownj</artifactId>
@@ -22,7 +40,6 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
-
   </dependencies>
 
   <build>
