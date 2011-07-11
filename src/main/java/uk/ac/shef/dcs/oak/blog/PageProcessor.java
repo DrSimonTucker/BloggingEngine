@@ -11,6 +11,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import uk.ac.shef.dcs.oak.blog.generators.Generator;
+
 import com.petebevin.markdown.MarkdownProcessor;
 
 public class PageProcessor
@@ -53,19 +55,19 @@ public class PageProcessor
             System.err.println(fillers.keySet());
          }
          else
-            myBuffer.append(process(line, fillers) + "\n");
+            myBuffer.append(process(sourceFile, line, fillers) + "\n");
       reader.close();
 
       return myBuffer.toString();
    }
 
-   private String process(String line, Map<String, String> fillers)
+   private String process(File sourceFile, String line, Map<String, String> fillers)
    {
       Map<String, String> replaceMap = new TreeMap<String, String>();
       Matcher m = procPattern.matcher(line);
       while (m.find())
       {
-         String rep = build(m.group(1).substring(2, m.group(1).length() - 2), fillers);
+         String rep = build(sourceFile, m.group(1).substring(2, m.group(1).length() - 2), fillers);
          if (rep != null)
             replaceMap.put(m.group(1), rep);
          else
@@ -80,13 +82,25 @@ public class PageProcessor
       return repString;
    }
 
-   private String build(String in, Map<String, String> filler)
+   private String build(File sourceFile, String in, Map<String, String> filler)
    {
       if (SiteBuilder.debug)
          System.err.println("Replacing: " + in);
 
       if (filler.containsKey(in))
          return filler.get(in);
+
+      try
+      {
+         Class c = Class.forName("uk.ac.shef.dcs.oak.blog.generators."
+               + in.substring(0, 1).toUpperCase() + in.substring(1).toLowerCase());
+         Generator g = (Generator) c.getConstructor(new Class[0]).newInstance(new Object[0]);
+         return g.generate(sourceFile);
+      }
+      catch (Exception e)
+      {
+         e.printStackTrace();
+      }
 
       return null;
    }
