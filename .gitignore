@@ -1,0 +1,7 @@
+.classpath
+.project
+.fbprefs
+.settings
+target
+*~
+.checkstyle
