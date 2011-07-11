@@ -7,7 +7,33 @@
   <version>0.1-SNAPSHOT</version>
   <name>blogger</name>
   <url>http://maven.apache.org</url>
+
+  <scm>
+    <connection>scm:git:git@github.com:DrSimonTucker/BloggingEngine.git</connection>
+    <url>scm:git:git@github.com:DrSimonTucker/BloggingEngine.git</url>
+  </scm>
+  
+  <distributionManagement>
+    <repository>
+      <id>mcbee</id>
+      <name>mcbee-releases</name>
+      <url>http://mcbee:8080/artifactory/libs-releases-local</url>
+    </repository>
+    <snapshotRepository>
+      <id>mcbee</id>
+      <name>mcbee-snapshots</name>
+      <url>http://mcbee:8080/artifactory/libs-snapshots-local</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+
   <dependencies>
+    <dependency>
+      <groupId>org.markdownj</groupId>
+      <artifactId>markdownj</artifactId>
+      <version>0.3.0-1.0.2b4</version>
+    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
@@ -15,4 +41,27 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+	<plugin>
+	  <groupId>org.codehaus.mojo</groupId>
+	  <artifactId>exec-maven-plugin</artifactId>
+	  <version>1.2</version>
+	  <executions>
+	    <execution>
+	      <goals>
+		<goal>exec</goal>
+	      </goals>
+	    </execution>
+	  </executions>
+	  <configuration>
+	    <mainClass>uk.ac.shef.dcs.oak.blog.SiteBuilder</mainClass>
+	  </configuration>
+	</plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+
 </project>
