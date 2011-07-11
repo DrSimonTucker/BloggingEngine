@@ -8,7 +8,7 @@ public class Menulist implements Generator
 {
 
    @Override
-   public String generate(File sourceFile)
+   public String generate(File sourceFile, String[] parameters)
    {
       // Get the directories in the source file folder
       List<String> dirs = new LinkedList<String>();
@@ -16,9 +16,10 @@ public class Menulist implements Generator
          if (f.isDirectory())
             dirs.add(f.getName());
 
-      StringBuffer buffer = new StringBuffer();
+      StringBuffer buffer = new StringBuffer("<UL>");
       for (String dir : dirs)
-         buffer.append("* [" + dir + "](" + dir + ")\n");
+         buffer.append("<LI><A HREF=\"" + dir + "\">" + dir + "</a></LI>\n");
+      buffer.append("</UL>");
       return buffer.toString();
    }
 }

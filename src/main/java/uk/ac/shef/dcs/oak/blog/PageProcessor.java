@@ -32,16 +32,17 @@ public class PageProcessor
    public void process(File sourceFile, File templateFile, File outputFile) throws IOException
    {
       Map<String, String> filler = new TreeMap<String, String>();
-      String source = markdown(process(sourceFile, filler));
+      String source = markdown(process(sourceFile, filler, sourceFile));
 
       filler.put("SOURCE", source);
-      String output = process(templateFile, filler);
+      String output = process(templateFile, filler, sourceFile);
       PrintStream ps = new PrintStream(outputFile);
       ps.print(output);
       ps.close();
    }
 
-   public String process(File sourceFile, Map<String, String> fillers) throws IOException
+   public String process(File sourceFile, Map<String, String> fillers, File inputFile)
+         throws IOException
    {
       StringBuffer myBuffer = new StringBuffer();
 
@@ -55,7 +56,7 @@ public class PageProcessor
             System.err.println(fillers.keySet());
          }
          else
-            myBuffer.append(process(sourceFile, line, fillers) + "\n");
+            myBuffer.append(process(inputFile, line, fillers) + "\n");
       reader.close();
 
       return myBuffer.toString();
@@ -68,6 +69,7 @@ public class PageProcessor
       while (m.find())
       {
          String rep = build(sourceFile, m.group(1).substring(2, m.group(1).length() - 2), fillers);
+
          if (rep != null)
             replaceMap.put(m.group(1), rep);
          else
@@ -92,14 +94,19 @@ public class PageProcessor
 
       try
       {
+         String[] elems = in.split(":");
+         String[] params = new String[0];
+         String name = elems[0];
+         if (elems.length == 2)
+            params = elems[1].split(",");
          Class c = Class.forName("uk.ac.shef.dcs.oak.blog.generators."
-               + in.substring(0, 1).toUpperCase() + in.substring(1).toLowerCase());
+               + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase());
          Generator g = (Generator) c.getConstructor(new Class[0]).newInstance(new Object[0]);
-         return g.generate(sourceFile);
+         return g.generate(sourceFile, params);
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         // e.printStackTrace();
       }
 
       return null;

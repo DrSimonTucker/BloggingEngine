@@ -10,5 +10,5 @@ public interface Generator
     * @param parameters
     * @return
     */
-   String generate(File sourceFile);
+   String generate(File sourceFile, String[] parameters);
 }
