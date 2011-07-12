@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -30,7 +31,27 @@ public class SiteBuilder
       }
    }
 
-   Map<File, File> inputFileToTemplate = new TreeMap<File, File>();
+   Map<File, File> inputFileToTemplate = new TreeMap<File, File>(new Comparator<File>()
+   {
+      @Override
+      public int compare(File arg0, File arg1)
+      {
+         // Get the depth of each file
+         Integer depth0 = arg0.getAbsolutePath().split(File.separator).length;
+         Integer depth1 = arg1.getAbsolutePath().split(File.separator).length;
+
+         if (depth0.compareTo(depth1) == 0)
+            if (arg0.getName().equals("index.markdown"))
+               return -1;
+            else if (arg0.getName().equals("index.markdown"))
+               return 1;
+            else
+               return arg0.compareTo(arg1);
+         else
+            return depth0.compareTo(depth1);
+      }
+   });
+
    File baseFile = null;
    PageProcessor proc = new PageProcessor();
 
@@ -61,12 +82,14 @@ public class SiteBuilder
 
    public void processInput(File outputPath)
    {
+      Map<String, String> filler = new TreeMap<String, String>();
+
       // Clear the outputDirectory
       if (clear(outputPath))
          for (Entry<File, File> entry : inputFileToTemplate.entrySet())
             try
             {
-               buildOutput(entry.getKey(), entry.getValue(), outputPath);
+               filler = buildOutput(entry.getKey(), entry.getValue(), outputPath, filler);
             }
             catch (IOException e)
             {
@@ -78,7 +101,8 @@ public class SiteBuilder
 
    }
 
-   private void buildOutput(File inputFile, File templateFile, File outputPath) throws IOException
+   private Map<String, String> buildOutput(File inputFile, File templateFile, File outputPath,
+         Map<String, String> filler) throws IOException
    {
       if (!inputFile.getName().equals("template.html"))
          if (inputFile.getName().endsWith(".markdown"))
@@ -95,11 +119,13 @@ public class SiteBuilder
             if (debug)
                System.out.println(inputFile + " => " + outputFile + " (" + templateFile + ")");
 
-            proc.process(inputFile, templateFile, outputFile);
+            filler = proc.process(inputFile, templateFile, outputFile, filler);
          }
          else
             // Copy the file across
             copy(inputFile, new File(outputPath, inputFile.getName()));
+
+      return filler;
    }
 
    private void copy(File inFile, File outFile) throws IOException

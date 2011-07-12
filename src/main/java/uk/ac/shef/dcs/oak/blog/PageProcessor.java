@@ -29,9 +29,9 @@ public class PageProcessor
     * @param templateFile
     * @param outputFile
     */
-   public void process(File sourceFile, File templateFile, File outputFile) throws IOException
+   public Map<String, String> process(File sourceFile, File templateFile, File outputFile,
+         Map<String, String> filler) throws IOException
    {
-      Map<String, String> filler = new TreeMap<String, String>();
       String source = markdown(process(sourceFile, filler, sourceFile));
 
       filler.put("SOURCE", source);
@@ -39,6 +39,8 @@ public class PageProcessor
       PrintStream ps = new PrintStream(outputFile);
       ps.print(output);
       ps.close();
+
+      return filler;
    }
 
    public String process(File sourceFile, Map<String, String> fillers, File inputFile)
@@ -99,10 +101,11 @@ public class PageProcessor
          String name = elems[0];
          if (elems.length == 2)
             params = elems[1].split(",");
-         
+
          @SuppressWarnings("unchecked")
-         Class<Generator> c = (Class<Generator>)Class.forName("uk.ac.shef.dcs.oak.blog.generators."
-               + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase());
+         Class<Generator> c = (Class<Generator>) Class
+               .forName("uk.ac.shef.dcs.oak.blog.generators." + name.substring(0, 1).toUpperCase()
+                     + name.substring(1).toLowerCase());
          Generator g = c.getConstructor(new Class[0]).newInstance(new Object[0]);
          return g.generate(sourceFile, params);
       }
