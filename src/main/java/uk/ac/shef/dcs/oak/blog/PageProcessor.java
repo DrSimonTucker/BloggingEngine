@@ -99,9 +99,11 @@ public class PageProcessor
          String name = elems[0];
          if (elems.length == 2)
             params = elems[1].split(",");
-         Class c = Class.forName("uk.ac.shef.dcs.oak.blog.generators."
+         
+         @SuppressWarnings("unchecked")
+         Class<Generator> c = (Class<Generator>)Class.forName("uk.ac.shef.dcs.oak.blog.generators."
                + name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase());
-         Generator g = (Generator) c.getConstructor(new Class[0]).newInstance(new Object[0]);
+         Generator g = c.getConstructor(new Class[0]).newInstance(new Object[0]);
          return g.generate(sourceFile, params);
       }
       catch (Exception e)
