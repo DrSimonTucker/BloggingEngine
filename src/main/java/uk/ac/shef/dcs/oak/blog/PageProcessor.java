@@ -21,6 +21,8 @@ public class PageProcessor
 
    Pattern procPattern = Pattern.compile("(\\[\\[.*?\\]\\])");
 
+   public static boolean doingHoldout = false;
+
    /**
     * Method to build the output file on the basis of the source and the
     * template filese
@@ -30,9 +32,11 @@ public class PageProcessor
     * @param outputFile
     */
    public Map<String, String> process(File sourceFile, File templateFile, File outputFile,
-         Map<String, String> filler) throws IOException
+         Map<String, String> filler, Map<File, String> sourceMap) throws IOException,
+         HoldOutException
    {
       String source = markdown(process(sourceFile, filler, sourceFile));
+      sourceMap.put(sourceFile, source);
 
       filler.put("SOURCE", source);
       String output = process(templateFile, filler, sourceFile);
@@ -44,7 +48,7 @@ public class PageProcessor
    }
 
    public String process(File sourceFile, Map<String, String> fillers, File inputFile)
-         throws IOException
+         throws IOException, HoldOutException
    {
       StringBuffer myBuffer = new StringBuffer();
 
@@ -65,6 +69,7 @@ public class PageProcessor
    }
 
    private String process(File sourceFile, String line, Map<String, String> fillers)
+         throws HoldOutException
    {
       Map<String, String> replaceMap = new TreeMap<String, String>();
       Matcher m = procPattern.matcher(line);
@@ -87,6 +92,7 @@ public class PageProcessor
    }
 
    private String build(File sourceFile, String in, Map<String, String> filler)
+         throws HoldOutException
    {
       if (SiteBuilder.debug)
          System.err.println("Replacing: " + in);
@@ -107,7 +113,13 @@ public class PageProcessor
                .forName("uk.ac.shef.dcs.oak.blog.generators." + name.substring(0, 1).toUpperCase()
                      + name.substring(1).toLowerCase());
          Generator g = c.getConstructor(new Class[0]).newInstance(new Object[0]);
+         if (g.postProcess())
+            throw new HoldOutException(filler);
          return g.generate(sourceFile, params);
+      }
+      catch (HoldOutException e)
+      {
+         throw e;
       }
       catch (Exception e)
       {

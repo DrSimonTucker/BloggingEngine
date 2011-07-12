@@ -5,6 +5,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -52,8 +54,11 @@ public class SiteBuilder
       }
    });
 
+   Map<File, String> outputMap = new TreeMap<File, String>();
+
    File baseFile = null;
    PageProcessor proc = new PageProcessor();
+   List<HoldOutPage> heldPages = new LinkedList<HoldOutPage>();
 
    public SiteBuilder(String inputPath)
    {
@@ -96,13 +101,32 @@ public class SiteBuilder
                System.err.println("Unable to build " + entry.getKey() + ": "
                      + e.getLocalizedMessage());
             }
+            catch (HoldOutException e)
+            {
+               HoldOutPage page = new HoldOutPage(filler, entry.getKey(), entry.getValue(),
+                     outputPath);
+               heldPages.add(page);
+            }
       else
          System.err.println("Output directory could not be cleared!");
+
+      // Process all the holdouts
+      for (HoldOutPage page : heldPages)
+      {
+         try
+         {
+            buildOutput(page.inputSource, page.outputFile, page.templateFile, page.filler);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
 
    }
 
    private Map<String, String> buildOutput(File inputFile, File templateFile, File outputPath,
-         Map<String, String> filler) throws IOException
+         Map<String, String> filler) throws IOException, HoldOutException
    {
       if (!inputFile.getName().equals("template.html"))
          if (inputFile.getName().endsWith(".markdown"))
@@ -119,7 +143,7 @@ public class SiteBuilder
             if (debug)
                System.out.println(inputFile + " => " + outputFile + " (" + templateFile + ")");
 
-            filler = proc.process(inputFile, templateFile, outputFile, filler);
+            filler = proc.process(inputFile, templateFile, outputFile, filler, outputMap);
          }
          else
             // Copy the file across
@@ -178,4 +202,21 @@ public class SiteBuilder
          // Add this to the map if it's a file
          inputFileToTemplate.put(proc, template);
    }
+}
+
+class HoldOutPage
+{
+   Map<String, String> filler = new TreeMap<String, String>();
+   File inputSource;
+   File templateFile;
+   File outputFile;
+
+   public HoldOutPage(Map<String, String> fillerIn, File input, File template, File output)
+   {
+      inputSource = input;
+      templateFile = template;
+      filler.putAll(fillerIn);
+      outputFile = output;
+   }
+
 }
