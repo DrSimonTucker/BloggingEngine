@@ -5,6 +5,5 @@
 target
 *~
 .checkstyle
-input
-output
 run.sh
+output
