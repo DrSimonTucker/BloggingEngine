@@ -57,8 +57,8 @@ public class PageProcessor
          if (line.startsWith("~"))
          {
             String[] elems = line.trim().split("~");
-            System.err.println("Adding filler: " + elems[1] + " => " + elems[2]);
-            fillers.put(elems[1], elems[2]);
+            String procFiller = elems[2];
+            fillers.put(elems[1], procFiller);
             System.err.println(fillers.keySet());
          }
          else
@@ -98,7 +98,13 @@ public class PageProcessor
          System.err.println("Replacing: " + in);
 
       if (filler.containsKey(in))
-         return filler.get(in);
+      {
+         String filled = filler.get(in);
+         if (filled.startsWith("[["))
+            return build(sourceFile, filled.substring(2, filled.length() - 2), filler);
+         else
+            return filler.get(in);
+      }
 
       try
       {

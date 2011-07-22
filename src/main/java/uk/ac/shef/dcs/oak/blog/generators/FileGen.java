@@ -3,7 +3,7 @@ package uk.ac.shef.dcs.oak.blog.generators;
 import java.io.File;
 import java.util.Map;
 
-public class FileGen implements Generator
+public class Filegen implements Generator
 {
 
    @Override
@@ -22,7 +22,7 @@ public class FileGen implements Generator
    @Override
    public String generate(File sourceFile, String[] parameters)
    {
-      System.err.println("Searching: " + sourceFile);
+      System.err.println("Searching: " + sourceFile + " for " + parameters[0]);
       StringBuffer retString = new StringBuffer();
       String filename = parameters[0];
 
@@ -31,7 +31,10 @@ public class FileGen implements Generator
       {
          for (java.io.File f : searchFile.listFiles())
             if (f.getName().equals(filename))
+            {
+               System.err.println("Found: " + retString + filename);
                return retString + filename;
+            }
          searchFile = searchFile.getParentFile();
          retString.append("../");
       }
