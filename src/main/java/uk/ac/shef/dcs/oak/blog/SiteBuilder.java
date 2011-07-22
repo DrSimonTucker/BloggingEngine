@@ -38,9 +38,13 @@ public class SiteBuilder
       @Override
       public int compare(File arg0, File arg1)
       {
+         String fsc = File.separator;
+         if (fsc.equals("\\"))
+            fsc = "\\\\";
+
          // Get the depth of each file
-         Integer depth0 = arg0.getAbsolutePath().split(File.separator).length;
-         Integer depth1 = arg1.getAbsolutePath().split(File.separator).length;
+         Integer depth0 = arg0.getAbsolutePath().split(fsc).length;
+         Integer depth1 = arg1.getAbsolutePath().split(fsc).length;
 
          if (depth0.compareTo(depth1) == 0)
             if (arg0.getName().equals("index.markdown"))
@@ -112,7 +116,6 @@ public class SiteBuilder
 
       // Process all the holdouts
       for (HoldOutPage page : heldPages)
-      {
          try
          {
             buildOutput(page.inputSource, page.outputFile, page.templateFile, page.filler);
@@ -121,7 +124,6 @@ public class SiteBuilder
          {
             e.printStackTrace();
          }
-      }
 
    }
 

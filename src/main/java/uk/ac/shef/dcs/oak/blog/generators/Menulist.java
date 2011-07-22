@@ -13,11 +13,16 @@ public class Menulist implements Generator
    @Override
    public String generate(File sourceFile, String[] parameters, Map<File, String> pageMap)
    {
-      int depthCount = sourceFile.getAbsolutePath().split(File.separator).length;
+      // This deals with splitting problem on windows machines
+      String fsc = File.separator;
+      if (fsc.equals("\\"))
+         fsc = "\\\\";
+
+      int depthCount = sourceFile.getAbsolutePath().split(fsc).length;
 
       List<File> entryFiles = new LinkedList<File>();
       for (File f : pageMap.keySet())
-         if (f.getAbsolutePath().split(File.separator).length == depthCount)
+         if (f.getAbsolutePath().split(fsc).length == depthCount)
             entryFiles.add(f);
 
       Collections.sort(entryFiles, new Comparator<File>()
@@ -32,9 +37,7 @@ public class Menulist implements Generator
       StringBuffer outString = new StringBuffer();
       DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
       for (File f : entryFiles)
-      {
          outString.append("###" + df.format(f.lastModified()) + "###\n" + summ(pageMap.get(f)));
-      }
 
       return outString.toString();
    }
