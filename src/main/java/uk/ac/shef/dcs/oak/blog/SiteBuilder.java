@@ -130,6 +130,8 @@ public class SiteBuilder
    private Map<String, String> buildOutput(File inputFile, File templateFile, File outputPath,
          Map<String, String> filler) throws IOException, HoldOutException
    {
+      if (debug)
+         System.out.println("Building " + inputFile);
       if (!inputFile.getName().equals("template.html"))
          if (inputFile.getName().endsWith(".markdown"))
          {

@@ -80,8 +80,7 @@ public class PageProcessor
          if (rep != null)
             replaceMap.put(m.group(1), rep);
          else
-            System.out.println("Cannot process filler: " + m.group(1) + " given "
-                  + fillers.keySet());
+            System.out.println("Cannot process filler: " + line + " given " + fillers.keySet());
       }
 
       String repString = line;
