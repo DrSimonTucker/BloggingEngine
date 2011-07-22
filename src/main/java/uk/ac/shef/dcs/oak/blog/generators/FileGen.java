@@ -22,7 +22,7 @@ public class Filegen implements Generator
    @Override
    public String generate(File sourceFile, String[] parameters)
    {
-      System.err.println("Searching: " + sourceFile + " for " + parameters[0]);
+      System.out.println("Searching: " + sourceFile + " for " + parameters[0]);
       StringBuffer retString = new StringBuffer();
       String filename = parameters[0];
 
@@ -32,7 +32,7 @@ public class Filegen implements Generator
          for (java.io.File f : searchFile.listFiles())
             if (f.getName().equals(filename))
             {
-               System.err.println("Found: " + retString + filename);
+               System.out.println("Found: " + retString + filename);
                return retString + filename;
             }
          searchFile = searchFile.getParentFile();

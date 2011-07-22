@@ -79,10 +79,10 @@ public class SiteBuilder
       for (File f : outputPath.listFiles())
       {
          if (debug)
-            System.err.println("Deleting: " + f);
+            System.out.println("Deleting: " + f);
          if (!f.delete())
          {
-            System.err.println("Unable to delete: " + f);
+            System.out.println("Unable to delete: " + f);
             return false;
          }
       }
@@ -102,7 +102,7 @@ public class SiteBuilder
             }
             catch (IOException e)
             {
-               System.err.println("Unable to build " + entry.getKey() + ": "
+               System.out.println("Unable to build " + entry.getKey() + ": "
                      + e.getLocalizedMessage());
             }
             catch (HoldOutException e)
@@ -148,8 +148,9 @@ public class SiteBuilder
             filler = proc.process(inputFile, templateFile, outputFile, filler, outputMap);
          }
          else
-            // Copy the file across
-            copy(inputFile, new File(outputPath, inputFile.getName()));
+            copy(inputFile,
+                  new File(outputPath, inputFile.getAbsolutePath().substring(
+                        baseFile.getAbsolutePath().length())));
 
       return filler;
    }
@@ -157,7 +158,7 @@ public class SiteBuilder
    private void copy(File inFile, File outFile) throws IOException
    {
       if (debug)
-         System.err.println("Copying: " + inFile + " => " + outFile);
+         System.out.println("Copying: " + inFile + " => " + outFile);
 
       FileInputStream fis = new FileInputStream(inFile);
       FileOutputStream fos = new FileOutputStream(outFile);
@@ -188,7 +189,7 @@ public class SiteBuilder
    private void buildMap(File proc, File template)
    {
       if (debug)
-         System.err.println("Processing: " + proc);
+         System.out.println("Processing: " + proc);
       if (proc.isDirectory())
       {
          // First search the directory for a template file

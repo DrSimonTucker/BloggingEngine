@@ -59,7 +59,7 @@ public class PageProcessor
             String[] elems = line.trim().split("~");
             String procFiller = elems[2];
             fillers.put(elems[1], procFiller);
-            System.err.println(fillers.keySet());
+            System.out.println(fillers.keySet());
          }
          else
             myBuffer.append(process(inputFile, line, fillers) + "\n");
@@ -80,7 +80,7 @@ public class PageProcessor
          if (rep != null)
             replaceMap.put(m.group(1), rep);
          else
-            System.err.println("Cannot process filler: " + m.group(1) + " given "
+            System.out.println("Cannot process filler: " + m.group(1) + " given "
                   + fillers.keySet());
       }
 
@@ -95,7 +95,7 @@ public class PageProcessor
          throws HoldOutException
    {
       if (SiteBuilder.debug)
-         System.err.println("Replacing: " + in);
+         System.out.println("Replacing: " + in);
 
       if (filler.containsKey(in))
       {
