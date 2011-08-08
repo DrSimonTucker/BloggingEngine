@@ -118,7 +118,7 @@ public class SiteBuilder
       for (HoldOutPage page : heldPages)
          try
          {
-            buildOutput(page.inputSource, page.outputFile, page.templateFile, page.filler);
+            buildHoldOutOutput(page.inputSource, page.templateFile, page.outputFile, page.filler);
          }
          catch (Exception e)
          {
@@ -132,6 +132,40 @@ public class SiteBuilder
    {
       if (debug)
          System.out.println("Building " + inputFile);
+
+      if (!inputFile.getName().equals("template.html"))
+         if (inputFile.getName().endsWith(".markdown"))
+         {
+            // Build the output file
+            String outputFilePath = inputFile.getAbsolutePath().substring(
+                  baseFile.getAbsolutePath().length());
+            outputFilePath = outputFilePath.substring(0, outputFilePath.lastIndexOf(".")) + ".html";
+            File outputFile = new File(outputPath, outputFilePath);
+
+            if (outputFile.getParentFile().mkdirs())
+               System.err.println("Created directories");
+
+            filler = proc.process(inputFile, templateFile, outputFile, filler, outputMap);
+
+            if (debug)
+               System.out.println("BUILD: " + inputFile + " => " + outputFile + " (" + templateFile
+                     + ")");
+
+         }
+         else
+            copy(inputFile,
+                  new File(outputPath, inputFile.getAbsolutePath().substring(
+                        baseFile.getAbsolutePath().length())));
+
+      return filler;
+   }
+
+   private Map<String, String> buildHoldOutOutput(File inputFile, File templateFile,
+         File outputPath, Map<String, String> filler) throws IOException
+   {
+      if (debug)
+         System.out.println("Building " + inputFile);
+
       if (!inputFile.getName().equals("template.html"))
          if (inputFile.getName().endsWith(".markdown"))
          {
@@ -145,9 +179,10 @@ public class SiteBuilder
                System.err.println("Created directories");
 
             if (debug)
-               System.out.println(inputFile + " => " + outputFile + " (" + templateFile + ")");
+               System.out.println("BUILD: " + inputFile + " => " + outputFile + " (" + templateFile
+                     + ")");
 
-            filler = proc.process(inputFile, templateFile, outputFile, filler, outputMap);
+            filler = proc.processHeld(inputFile, templateFile, outputFile, filler, outputMap);
          }
          else
             copy(inputFile,
@@ -192,6 +227,7 @@ public class SiteBuilder
    {
       if (debug)
          System.out.println("Processing: " + proc);
+
       if (proc.isDirectory())
       {
          // First search the directory for a template file

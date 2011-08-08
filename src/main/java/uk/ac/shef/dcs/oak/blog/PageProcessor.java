@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -47,6 +48,35 @@ public class PageProcessor
       return filler;
    }
 
+   /**
+    * Method to build the output file on the basis of the source and the
+    * template filese
+    * 
+    * @param sourceFile
+    * @param templateFile
+    * @param outputFile
+    */
+   public Map<String, String> processHeld(File sourceFile, File templateFile, File outputFile,
+         Map<String, String> filler, Map<File, String> sourceMap) throws IOException
+   {
+      String source = markdown(process(sourceFile, filler, sourceFile, sourceMap));
+      sourceMap.put(sourceFile, source);
+
+      filler.put("SOURCE", source);
+      try
+      {
+         String output = process(templateFile, filler, sourceFile);
+         PrintStream ps = new PrintStream(outputFile);
+         ps.print(output);
+         ps.close();
+      }
+      catch (HoldOutException e)
+      {
+         e.printStackTrace();
+      }
+      return filler;
+   }
+
    public String process(File sourceFile, Map<String, String> fillers, File inputFile)
          throws IOException, HoldOutException
    {
@@ -68,6 +98,28 @@ public class PageProcessor
       return myBuffer.toString();
    }
 
+   public String process(File sourceFile, Map<String, String> fillers, File inputFile,
+         Map<File, String> outMap) throws IOException
+   {
+      StringBuffer myBuffer = new StringBuffer();
+
+      System.out.println("Adding PROC FINAL : " + sourceFile);
+      BufferedReader reader = new BufferedReader(new FileReader(sourceFile));
+      for (String line = reader.readLine(); line != null; line = reader.readLine())
+         if (line.startsWith("~"))
+         {
+            String[] elems = line.trim().split("~");
+            String procFiller = elems[2];
+            fillers.put(elems[1], procFiller);
+            System.out.println(fillers.keySet());
+         }
+         else
+            myBuffer.append(process(inputFile, line, fillers, outMap) + "\n");
+      reader.close();
+
+      return myBuffer.toString();
+   }
+
    private String process(File sourceFile, String line, Map<String, String> fillers)
          throws HoldOutException
    {
@@ -76,6 +128,29 @@ public class PageProcessor
       while (m.find())
       {
          String rep = build(sourceFile, m.group(1).substring(2, m.group(1).length() - 2), fillers);
+
+         if (rep != null)
+            replaceMap.put(m.group(1), rep);
+         else
+            System.out.println("Cannot process filler: " + line + " given " + fillers.keySet());
+      }
+
+      String repString = line;
+      for (Entry<String, String> ent : replaceMap.entrySet())
+         repString = repString.replace(ent.getKey(), ent.getValue());
+
+      return repString;
+   }
+
+   private String process(File sourceFile, String line, Map<String, String> fillers,
+         Map<File, String> outMap)
+   {
+      Map<String, String> replaceMap = new TreeMap<String, String>();
+      Matcher m = procPattern.matcher(line);
+      while (m.find())
+      {
+         String rep = build(sourceFile, m.group(1).substring(2, m.group(1).length() - 2), fillers,
+               outMap);
 
          if (rep != null)
             replaceMap.put(m.group(1), rep);
@@ -105,14 +180,13 @@ public class PageProcessor
             return filler.get(in);
       }
 
+      String[] elems = in.split(":");
+      String[] params = new String[0];
+      String name = elems[0];
+      if (elems.length == 2)
+         params = elems[1].split(",");
       try
       {
-         String[] elems = in.split(":");
-         String[] params = new String[0];
-         String name = elems[0];
-         if (elems.length == 2)
-            params = elems[1].split(",");
-
          @SuppressWarnings("unchecked")
          Class<Generator> c = (Class<Generator>) Class
                .forName("uk.ac.shef.dcs.oak.blog.generators." + name.substring(0, 1).toUpperCase()
@@ -122,13 +196,105 @@ public class PageProcessor
             throw new HoldOutException(filler);
          return g.generate(sourceFile, params);
       }
-      catch (HoldOutException e)
+      catch (ClassNotFoundException e)
       {
-         throw e;
+         e.printStackTrace();
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
-         // e.printStackTrace();
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (SecurityException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (InstantiationException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (IllegalAccessException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (InvocationTargetException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (NoSuchMethodException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      return null;
+   }
+
+   private String build(File sourceFile, String in, Map<String, String> filler,
+         Map<File, String> outMap)
+   {
+      if (SiteBuilder.debug)
+         System.out.println("Replacing: " + in);
+
+      if (filler.containsKey(in))
+      {
+         String filled = filler.get(in);
+         if (filled.startsWith("[["))
+            return build(sourceFile, filled.substring(2, filled.length() - 2), filler, outMap);
+         else
+            return filler.get(in);
+      }
+
+      String[] elems = in.split(":");
+      String[] params = new String[0];
+      String name = elems[0];
+      if (elems.length == 2)
+         params = elems[1].split(",");
+      try
+      {
+         @SuppressWarnings("unchecked")
+         Class<Generator> c = (Class<Generator>) Class
+               .forName("uk.ac.shef.dcs.oak.blog.generators." + name.substring(0, 1).toUpperCase()
+                     + name.substring(1).toLowerCase());
+         Generator g = c.getConstructor(new Class[0]).newInstance(new Object[0]);
+         return g.generate(sourceFile, params, outMap);
+      }
+      catch (ClassNotFoundException e)
+      {
+         e.printStackTrace();
+      }
+      catch (IllegalArgumentException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (SecurityException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (InstantiationException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (IllegalAccessException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (InvocationTargetException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
+      catch (NoSuchMethodException e)
+      {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
       }
       return null;
    }

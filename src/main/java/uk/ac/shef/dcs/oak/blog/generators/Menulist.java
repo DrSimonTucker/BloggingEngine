@@ -1,9 +1,6 @@
 package uk.ac.shef.dcs.oak.blog.generators;
 
 import java.io.File;
-import java.text.DateFormat;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,38 +10,8 @@ public class Menulist implements Generator
    @Override
    public String generate(File sourceFile, String[] parameters, Map<File, String> pageMap)
    {
-      // This deals with splitting problem on windows machines
-      String fsc = File.separator;
-      if (fsc.equals("\\"))
-         fsc = "\\\\";
-
-      int depthCount = sourceFile.getAbsolutePath().split(fsc).length;
-
-      List<File> entryFiles = new LinkedList<File>();
-      for (File f : pageMap.keySet())
-         if (f.getAbsolutePath().split(fsc).length == depthCount)
-            entryFiles.add(f);
-
-      Collections.sort(entryFiles, new Comparator<File>()
-      {
-         @Override
-         public int compare(File arg0, File arg1)
-         {
-            return (int) (arg0.lastModified() - arg1.lastModified());
-         }
-      });
-
-      StringBuffer outString = new StringBuffer();
-      DateFormat df = DateFormat.getDateInstance(DateFormat.MEDIUM);
-      for (File f : entryFiles)
-         outString.append("###" + df.format(f.lastModified()) + "###\n" + summ(pageMap.get(f)));
-
-      return outString.toString();
-   }
-
-   private String summ(String in)
-   {
-      return in.substring(0, Math.min(in.length(), 100)) + "...";
+      // TODO Auto-generated method stub
+      return null;
    }
 
    @Override
